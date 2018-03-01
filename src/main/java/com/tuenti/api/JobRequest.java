@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 public class JobRequest {
 
     @SerializedName("repo_path")
-    private final String repoPath;
+    private final String repoPath = "/android-messenger";
 
     @SerializedName("branch")
     private final String branch;
@@ -19,11 +19,21 @@ public class JobRequest {
     @SerializedName("workflow")
     private final String workflow;
 
-    public JobRequest(String repoPath, String branch, String changeset, String issue, String workflow) {
-        this.repoPath = repoPath;
+    public JobRequest(String branch, String changeset, String issue, String workflow) {
         this.branch = branch;
         this.changeset = changeset;
         this.issue = issue;
         this.workflow = workflow;
+    }
+
+    @Override
+    public String toString() {
+        return "JobRequest{" +
+                "repoPath='" + repoPath + '\'' +
+                ", branch='" + branch + '\'' +
+                ", changeset='" + changeset + '\'' +
+                ", issue='" + issue + '\'' +
+                ", workflow='" + workflow + '\'' +
+                '}';
     }
 }

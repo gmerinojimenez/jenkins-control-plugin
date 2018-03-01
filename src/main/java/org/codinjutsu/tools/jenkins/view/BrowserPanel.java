@@ -423,7 +423,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         actionGroup.add(new RefreshRssAction());
         actionGroup.addSeparator();
         actionGroup.add(new OpenPluginSettingsAction());
-
+        actionGroup.add(new LaunchDevAction());
 
         GuiUtil.installActionGroupInToolBar(actionGroup, this, ActionManager.getInstance(), "jenkinsBrowserActions");
     }
