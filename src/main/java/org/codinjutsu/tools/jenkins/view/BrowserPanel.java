@@ -25,6 +25,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.PopupHandler;
@@ -61,6 +62,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
 
@@ -504,7 +508,14 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     }
 
     private void fillJobTree(final BuildStatusVisitor buildStatusVisitor) {
-        final List<Job> jobList = jenkins.getJobs();
+        List<Job> jobList = jenkins.getJobs();
+        String branch = tryToGetBranch(project);
+        System.out.println(branch);
+        if (branch != null && !jobList.isEmpty()) {
+            jobList = jobList.stream().filter(job ->
+                    job.getName().contains(branch)).collect(Collectors.toList());
+        }
+
         if (jobList.isEmpty()) {
             return;
         }
@@ -527,6 +538,51 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         setSortedByStatus(sortedByBuildStatus);
 
         jobTree.setRootVisible(true);
+    }
+
+    private String tryToGetBranch(Project project) {
+        VirtualFile gitDir = project.getBaseDir().findChild(".git");
+        if (gitDir != null) {
+            VirtualFile gitHeadSymRefFile = gitDir.findChild("HEAD");
+
+            if (gitHeadSymRefFile != null) {
+                return determineBranchName(gitHeadSymRefFile);
+            }
+
+        }
+        return null;
+    }
+
+    private static final Pattern FIRST_LINE_PATTERN = Pattern.compile("(ref: )?(.+)[\\r\\n]*");
+
+    private String determineBranchName(VirtualFile headFile) {
+        if (headFile != null) {
+            try {
+                String headLinkAsString = new String(headFile.contentsToByteArray());
+                Matcher matcher = FIRST_LINE_PATTERN.matcher(headLinkAsString);
+                if (matcher.find() && matcher.groupCount() >= 2) {
+                    String branchName = matcher.group(2).trim();
+                    branchName = removePrefix("refs/", branchName);
+                    branchName = removePrefix("heads/", branchName);
+                    return branchName;
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        // could not determine branch name, returning null
+        return null;
+    }
+
+    /**
+     * Utility function to tidy-up common repetition of sym-link path to current branch.
+     */
+    private String removePrefix(String prefix, String branchName) {
+        if (branchName.startsWith(prefix) && branchName.length() > prefix.length()) {
+            return branchName.substring(prefix.length());
+        }
+        return branchName;
     }
 
     public void setAsFavorite(final List<Job> jobs) {
