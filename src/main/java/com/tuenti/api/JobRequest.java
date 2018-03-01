@@ -28,12 +28,8 @@ public class JobRequest {
 
     @Override
     public String toString() {
-        return "JobRequest{" +
-                "repoPath='" + repoPath + '\'' +
-                ", branch='" + branch + '\'' +
-                ", changeset='" + changeset + '\'' +
-                ", issue='" + issue + '\'' +
-                ", workflow='" + workflow + '\'' +
-                '}';
+        return "branch --> " + branch + "\n" +
+                "changeset --> " + changeset + "\n" +
+                "issue --> " + issue;
     }
 }

@@ -28,7 +28,6 @@ import org.codinjutsu.tools.jenkins.JenkinsSettings;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 
 import javax.swing.*;
-import java.io.IOException;
 
 public class LaunchDevAction extends AnAction implements DumbAware {
 
@@ -49,17 +48,15 @@ public class LaunchDevAction extends AnAction implements DumbAware {
                 "dev");
 
         Project project = event.getProject();
-        int returnCode = Messages.showOkCancelDialog(project, jobRequest.toString(),"Launch Dev", SETTINGS_ICON);
+        int returnCode = Messages.showOkCancelDialog(project, jobRequest.toString(),"Launch Dev?", SETTINGS_ICON);
         if (returnCode == Messages.OK) {
             FlowApi api = new FlowApi();
             JenkinsSettings jenkinsSettings = JenkinsSettings.getSafeInstance(project);
             api.launchJob(jenkinsSettings.getUsername(), jenkinsSettings.getPassword(), jobRequest)
-                    .thenAccept(response -> {
-                        try {
-                            Messages.showMessageDialog(project, response.toString() + "\n"+ new String(response.body().bytes()), "Results", SETTINGS_ICON);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                    .thenAccept(response -> Messages.showMessageDialog(project, "Launch Succeeded!\n" + response.getJobName(), "Result", SETTINGS_ICON))
+                    .exceptionally(exception -> {
+                        Messages.showMessageDialog(project, "Launch Failed!", "Result", SETTINGS_ICON);
+                        return null;
                     });
         }
     }

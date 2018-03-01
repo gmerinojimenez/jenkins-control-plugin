@@ -16,7 +16,7 @@ public class FlowApi {
     private final Gson gson = new Gson();
     private final OkHttpClient okHttpClient = new OkHttpClient();
 
-    public CompletableFuture<Response> launchJob(String username, String password, JobRequest jobRequest) {
+    public CompletableFuture<JobResponse> launchJob(String username, String password, JobRequest jobRequest) {
             return CompletableFuture.supplyAsync(() -> {
                 MediaType mediaType = MediaType.parse("application/json; charset=" + CHARSET);
                 String authorization = "Basic " + new String(
@@ -29,15 +29,16 @@ public class FlowApi {
                         .addHeader("Authorization", authorization)
                         .build();
 
-                Response response = null;
+                JobResponse response = null;
                 try {
-                    response = okHttpClient
+                    ResponseBody responseBody = okHttpClient
                             .newCall(request)
-                            .execute();
+                            .execute()
+                            .body();
+                    response = gson.fromJson(new String(responseBody.bytes()), JobResponse.class);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
                 return response;
             });
     }
