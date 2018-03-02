@@ -150,7 +150,8 @@ public class JenkinsSettings implements PersistentStateComponent<JenkinsSettings
     }
 
     public boolean isSecurityMode() {
-        return StringUtils.isNotBlank(getUsername());
+        return false;
+        //return StringUtils.isNotBlank(getUsername());
     }
 
     public JenkinsVersion getVersion() {
