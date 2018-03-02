@@ -24,6 +24,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.tuenti.api.FlowApi;
+import com.tuenti.api.GitApi;
 import com.tuenti.api.JobRequest;
 import org.codinjutsu.tools.jenkins.JenkinsSettings;
 import org.codinjutsu.tools.jenkins.logic.Jira;
@@ -37,9 +38,8 @@ public class LaunchDevAction extends AnAction implements DumbAware {
 
     // static singleton of thread-safe Pattern object
     private static final Pattern FIRST_LINE_PATTERN = Pattern.compile("(ref: )?(.+)[\\r\\n]*");
-
-
     private static final Icon SETTINGS_ICON = GuiUtil.loadIcon("settings.png");
+    private final GitApi gitApi = new GitApi();
 
     public LaunchDevAction() {
         super("Launch Dev", "Edit the Jenkins settings for the current project", SETTINGS_ICON);
@@ -62,8 +62,8 @@ public class LaunchDevAction extends AnAction implements DumbAware {
         jira.doStuff(jenkinsSettings.getUsername(), jenkinsSettings.getPassword());
 
         JobRequest jobRequest = new JobRequest(
-                "apps/github-migration",
-                "apps/github-migration",
+                gitApi.tryToGetBranch(project),
+                gitApi.tryToGetChangeset(project),
                 "ANDROID-6133",
                 "dev");
 

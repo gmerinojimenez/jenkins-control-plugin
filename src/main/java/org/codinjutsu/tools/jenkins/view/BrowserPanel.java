@@ -35,6 +35,7 @@ import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.containers.Convertor;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.tuenti.api.GitApi;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.codinjutsu.tools.jenkins.JenkinsAppSettings;
@@ -96,6 +97,8 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
     private View currentSelectedView;
 
     private final Map<String, Job> watchedJobs = new ConcurrentHashMap<String, Job>();
+
+    private final GitApi gitApi = new GitApi();
 
     private static final Comparator<DefaultMutableTreeNode> sortByStatusComparator = new Comparator<DefaultMutableTreeNode>() {
         @Override
@@ -509,7 +512,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
 
     private void fillJobTree(final BuildStatusVisitor buildStatusVisitor) {
         List<Job> jobList = jenkins.getJobs();
-        String branch = tryToGetBranch(project);
+        String branch = gitApi.tryToGetBranch(project);
         System.out.println(branch);
         if (branch != null && !jobList.isEmpty()) {
             jobList = jobList.stream().filter(job ->
@@ -540,50 +543,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         jobTree.setRootVisible(true);
     }
 
-    private String tryToGetBranch(Project project) {
-        VirtualFile gitDir = project.getBaseDir().findChild(".git");
-        if (gitDir != null) {
-            VirtualFile gitHeadSymRefFile = gitDir.findChild("HEAD");
-
-            if (gitHeadSymRefFile != null) {
-                return determineBranchName(gitHeadSymRefFile);
-            }
-
-        }
-        return null;
-    }
-
     private static final Pattern FIRST_LINE_PATTERN = Pattern.compile("(ref: )?(.+)[\\r\\n]*");
-
-    private String determineBranchName(VirtualFile headFile) {
-        if (headFile != null) {
-            try {
-                String headLinkAsString = new String(headFile.contentsToByteArray());
-                Matcher matcher = FIRST_LINE_PATTERN.matcher(headLinkAsString);
-                if (matcher.find() && matcher.groupCount() >= 2) {
-                    String branchName = matcher.group(2).trim();
-                    branchName = removePrefix("refs/", branchName);
-                    branchName = removePrefix("heads/", branchName);
-                    return branchName;
-                }
-            } catch (Exception e) {
-                // ignore
-            }
-        }
-
-        // could not determine branch name, returning null
-        return null;
-    }
-
-    /**
-     * Utility function to tidy-up common repetition of sym-link path to current branch.
-     */
-    private String removePrefix(String prefix, String branchName) {
-        if (branchName.startsWith(prefix) && branchName.length() > prefix.length()) {
-            return branchName.substring(prefix.length());
-        }
-        return branchName;
-    }
 
     public void setAsFavorite(final List<Job> jobs) {
         jenkinsSettings.addFavorite(jobs);
