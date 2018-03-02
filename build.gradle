@@ -35,6 +35,10 @@ sourceSets {
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://maven.atlassian.com/content/repositories/atlassian-public/'
+    }
+
 }
 
 dependencies {
@@ -45,6 +49,8 @@ dependencies {
     }
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
     compile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
+    compile group: 'com.atlassian.jira', name: 'jira-rest-java-client', version: '2.0.0-m2'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
 
     testCompile 'junit:junit:4.10'
     testCompile 'org.mockito:mockito-all:1.8.5'

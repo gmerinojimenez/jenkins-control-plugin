@@ -21,7 +21,12 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.tuenti.api.FlowApi;
+import com.tuenti.api.JobRequest;
+import org.codinjutsu.tools.jenkins.JenkinsSettings;
+import org.codinjutsu.tools.jenkins.logic.Jira;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 
 import javax.swing.*;
@@ -43,29 +48,35 @@ public class LaunchDevAction extends AnAction implements DumbAware {
     @Override
     public void actionPerformed(AnActionEvent event) {
 
+
         Project project = event.getProject();
         if (project != null) {
             String branch = tryToGetBranch(project);
             System.out.println(branch);
         }
 
-//        JobRequest jobRequest = new JobRequest(
-//                "apps/github-migration",
-//                "apps/github-migration",
-//                "ANDROID-6133",
-//                "dev");
-//
-//        int returnCode = Messages.showOkCancelDialog(project, jobRequest.toString(),"Launch Dev?", SETTINGS_ICON);
-//        if (returnCode == Messages.OK) {
-//            FlowApi api = new FlowApi();
-//            JenkinsSettings jenkinsSettings = JenkinsSettings.getSafeInstance(project);
-//            api.launchJob(jenkinsSettings.getUsername(), jenkinsSettings.getPassword(), jobRequest)
-//                    .thenAccept(response -> Messages.showMessageDialog(project, "Launch Succeeded!\n" + response.getJobName(), "Result", SETTINGS_ICON))
-//                    .exceptionally(exception -> {
-//                        Messages.showMessageDialog(project, "Launch Failed!", "Result", SETTINGS_ICON);
-//                        return null;
-//                    });
-//        }
+
+        JenkinsSettings jenkinsSettings = JenkinsSettings.getSafeInstance(project);
+
+        Jira jira = new Jira();
+        jira.doStuff(jenkinsSettings.getUsername(), jenkinsSettings.getPassword());
+
+        JobRequest jobRequest = new JobRequest(
+                "apps/github-migration",
+                "apps/github-migration",
+                "ANDROID-6133",
+                "dev");
+
+        int returnCode = Messages.showOkCancelDialog(project, jobRequest.toString(),"Launch Dev?", SETTINGS_ICON);
+        if (returnCode == Messages.OK) {
+            FlowApi api = new FlowApi();
+            api.launchJob(jenkinsSettings.getUsername(), jenkinsSettings.getPassword(), jobRequest)
+                    .thenAccept(response -> Messages.showMessageDialog(project, "Launch Succeeded!\n" + response.getJobName(), "Result", SETTINGS_ICON))
+                    .exceptionally(exception -> {
+                        Messages.showMessageDialog(project, "Launch Failed!", "Result", SETTINGS_ICON);
+                        return null;
+                    });
+        }
     }
 
     private String tryToGetBranch(Project project) {
