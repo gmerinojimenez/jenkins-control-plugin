@@ -25,7 +25,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.PopupHandler;
@@ -63,7 +62,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -431,6 +429,7 @@ public class BrowserPanel extends SimpleToolWindowPanel implements Disposable {
         actionGroup.addSeparator();
         actionGroup.add(new OpenPluginSettingsAction());
         actionGroup.add(new LaunchDevAction());
+        actionGroup.add(new LaunchPreintAction());
 
         GuiUtil.installActionGroupInToolBar(actionGroup, this, ActionManager.getInstance(), "jenkinsBrowserActions");
     }

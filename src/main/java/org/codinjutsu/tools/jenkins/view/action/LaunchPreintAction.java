@@ -20,12 +20,12 @@ package org.codinjutsu.tools.jenkins.view.action;
 import com.intellij.openapi.project.DumbAware;
 import org.codinjutsu.tools.jenkins.util.GuiUtil;
 
-public class LaunchDevAction extends LaunchJobAction implements DumbAware {
+public class LaunchPreintAction extends LaunchJobAction implements DumbAware {
 
-    public LaunchDevAction() {
-        super("Launch Dev",
-                "Allows launching dev build",
+    public LaunchPreintAction() {
+        super("Launch Preint",
+                "Allows launching preintegration jobs",
                 GuiUtil.loadIcon("settings.png"),
-                "dev");
+                "preintegration");
     }
 }
